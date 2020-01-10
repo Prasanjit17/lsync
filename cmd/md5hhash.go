@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	//"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/fatih/color"
-	"github.com/syndtr/goleveldb/leveldb"
+	//"github.com/golang/leveldb"
 	"io"
+	"lsync/database"
 	"os"
 	"strings"
-	//"github.com/syndtr/goleveldb"
 
 )
 
@@ -26,21 +27,15 @@ type (
 
 func CheckHash(file string) ([]byte, error){
 
-	//db, err := database.New()
+	//db, err := leveldb.Open("dbms-db", nil)
 	//if err != nil {
-	//	color.Red("ERROR_DB_CONN: %s", err)
-	//	os.Exit(2)
+	//	fmt.Println("ld")
+	//	return nil, err
 	//}
-
-	db, err := leveldb.OpenFile("dbms-db", nil)
-	if err != nil {
-		return nil, err
-	}
-
+	db, _ := database.New()
 	//defer db.Close()
 
-	b, e := db.Get([]byte(file), nil)
-	color.Red("ERROR_IN_LDB: %s",e)
+	b, e := db.Get(file)
 	if e != nil {
 		if strings.Contains(e.Error(), "not found") {
 			hash, err := HashMd(file)
@@ -48,13 +43,16 @@ func CheckHash(file string) ([]byte, error){
 				fmt.Printf("** Error in generating Hash** \n %s\n", err)
 				return nil, err
 			}
-			err = db.Put([]byte(file), hash,nil)
+			err = db.Set(file, hash)
 			if err != nil {
 				fmt.Printf("%s in while data is PUT to DB \n", err)
 				return nil, err
 			}
-			return nil, e
+			return nil, err
 		}
+	} else {
+		color.Red("File hash found so same file can not be uploded")
+		os.Exit(3)
 	}
 
 	return b, e

@@ -27,7 +27,7 @@ command`,
 			return err
 		}
 
-		svc, err := aws.New("us-east-1", "cloudintern")
+		svc, err := aws.New("ap-south-1", "cloudintern1")
 		if err != nil {
 			fmt.Printf("ERROR_INIT_AWS: %s", err)
 			os.Exit(2)

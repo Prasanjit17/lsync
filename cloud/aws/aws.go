@@ -11,7 +11,6 @@ import (
 	"github.com/fatih/color"
 	"lsync/cloud"
 	"os"
-	"os/user"
 )
 
 
@@ -46,12 +45,8 @@ func New(region, bucket string) (cloud.AWS, error) {
 
 func (svc LogSVC) UploadFileToS3(f *os.File) error {
 
-	u, err := user.Current()
-	if err != nil {
-		return err
-	}
 
-	key := fmt.Sprintf("%s/%s", u.Name, f.Name())
+	key := fmt.Sprintf(f.Name())
 	uploadInput := &s3manager.UploadInput{
 		Body:   f,
 		Bucket: aws.String(svc.bucket),
@@ -81,36 +76,19 @@ func (svc LogSVC) SyncLogsToCW(fileName string) error {
 
 func (svc LogSVC) DeleteFileFromS3(f string) error {
 
+	//a := &s3.DeleteObjectInput{
+	//	Bucket:                    aws.String(svc.bucket),
+	//	Key:                       aws.String(f),
+	//}
+	//svc.DeleteFileFromS3(s3.DeleteObjectInput{
+	//	Bucket:                    aws.String(svc.bucket),
+	//	//Key:                       aws.String(),
+	//})
+		a := s3.DeleteObjectInput{
+			Bucket: aws.String(svc.bucket),
+			Key:    aws.String(f),
+		}
 
-	deletenputs := &s3.DeleteObjectsInput{
-		Bucket: aws.String(svc.bucket),
-		Delete: &s3.Delete{
-			Objects: []*s3.ObjectIdentifier{
-				{
-					Key: aws.String(f),
-				},
-			},
-			Quiet: aws.Bool(false),
-		},
-	}
-
-	objectinput := &s3.ListObjectsInput{
-		Bucket: aws.String(svc.bucket),
-	}
-	o, e := svc.s3.ListObjects(objectinput)
-	if e != nil {
-		fmt.Printf("Error in list")
-	}
-	fmt.Println(o)
-	for _, obj := range o.Contents {
-		fmt.Println("Object:", *obj.Key)
-	result, err := svc.s3.DeleteObjects(deletenputs)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		color.Green("file  Deleted to: %s", result)
-	}
-}
 return nil
 
 }

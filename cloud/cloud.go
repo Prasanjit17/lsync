@@ -1,6 +1,8 @@
 package cloud
 
-import "os"
+import (
+	"os"
+)
 
 type AWS interface {
 	UploadFileToS3(f *os.File) error
